@@ -8,12 +8,14 @@ void strrev(char *str) {
 	}
 }
 
+void connection_loop_read_handler(void *ptr);
+
 // takes in epoll fd and sock fd returns a connection instance
 // step 1 : dynamically allocate the connection instance
 // step 2 : attach the connection fd to the epoll fd using xps_loop_attach
 // step 3 : fill in the instance values
 // step 4 : add the connection in global connections vector
-xps_connection_t *xps_connection_create(int epoll_fd, int sock_fd) {
+xps_connection_t *xps_connection_create(xps_core_t *core, u_int sock_fd) {
 
     xps_connection_t *connection = malloc(sizeof(xps_connection_t));
     if (connection == NULL) {
@@ -22,16 +24,16 @@ xps_connection_t *xps_connection_create(int epoll_fd, int sock_fd) {
     }
 
     /* attach sock_fd to epoll */
-    xps_loop_attach(epoll_fd, sock_fd, EPOLLIN);
+    xps_loop_attach(core->loop, sock_fd, EPOLLIN, connection, connection_loop_read_handler);
 
     // Init values
-    connection->epoll_fd = epoll_fd;
+    connection->core = core;
     connection->sock_fd = sock_fd;
     connection->listener = NULL;
     connection->remote_ip = get_remote_ip(sock_fd);
 
     /* add connection to 'connections' list */
-    vec_push(&connections, connection);
+    vec_push(&core->connections, connection);
 
     logger(LOG_DEBUG, "xps_connection_create()", "created connection");
     return connection;
@@ -46,18 +48,18 @@ xps_connection_t *xps_connection_create(int epoll_fd, int sock_fd) {
 void xps_connection_destroy(xps_connection_t *connection) {
     /* validate params */
     assert(connection != NULL);
-
+    xps_core_t *core = connection->core;
         /* set connection to NULL in 'connections' list */
-        for (int i = 0; i < connections.length; i++) {
-        xps_connection_t *curr = connections.data[i];
+        for (int i = 0; i < core->connections.length; i++) {
+        xps_connection_t *curr = core->connections.data[i];
         if (curr == connection) {
-            connections.data[i] = NULL;
+            core->connections.data[i] = NULL;
             break;
         }
     }
 
     /* detach connection from loop */
-    xps_loop_detach(connection->epoll_fd, connection->sock_fd);
+    xps_loop_detach(core->loop, connection->sock_fd);
 
     /* close connection socket FD */
     close(connection->sock_fd);
@@ -79,9 +81,10 @@ void xps_connection_destroy(xps_connection_t *connection) {
 // step 4 : print client message
 // step 5 : reverse it 
 // step 6 : send it back to the client
-void xps_connection_read_handler(xps_connection_t *connection) {
+void connection_loop_read_handler(void *ptr) {
     /* validate params */
-    assert(connection != NULL);
+    assert(ptr != NULL);
+    xps_connection_t *connection = ptr;
 
     char buff[DEFAULT_BUFFER_SIZE];
     memset(buff, 0, DEFAULT_BUFFER_SIZE);
