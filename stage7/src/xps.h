@@ -53,7 +53,7 @@ typedef void (*xps_handler_t)(void *ptr);
 
 // xps headers
 #include "core/xps_core.h"
-#include <core/xps_loop.h"
+#include "core/xps_loop.h"
 #include "network/xps_connection.h"
 #include "network/xps_listener.h"
 #include "utils/xps_logger.h"
