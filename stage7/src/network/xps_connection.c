@@ -1,7 +1,10 @@
 #include "xps_connection.h"
 
 void strrev(char *str) {
-	for (int l = 0, r = strlen(str) - 2; l < r; l++, r--) {
+    int l = 0, r = strlen(str) - 1;
+    if (str[r] == '\n') r--;
+
+	for (; l < r; l++, r--) {
 		char temp = str[l];
 		str[l] = str[r];
 		str[r] = temp;

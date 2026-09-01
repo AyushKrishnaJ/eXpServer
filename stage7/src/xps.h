@@ -20,7 +20,7 @@
 // Constants
 #define DEFAULT_BACKLOG 64
 #define MAX_EPOLL_EVENTS 32
-#define DEFAULT_BUFFER_SIZE 100000 // 100 KB
+#define DEFAULT_BUFFER_SIZE 100000// 100 KB
 #define DEFAULT_NULLS_THRESH 32
 
 // Error Constants
