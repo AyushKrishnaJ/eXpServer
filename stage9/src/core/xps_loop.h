@@ -26,5 +26,6 @@ void xps_loop_destroy(xps_loop_t *loop);
 int xps_loop_attach(xps_loop_t *loop, u_int fd, int event_flags, void *ptr, xps_handler_t read_cb, xps_handler_t write_cb, xps_handler_t close_cb);
 int xps_loop_detach(xps_loop_t *loop, u_int fd);
 void xps_loop_run(xps_loop_t *loop);
+bool handle_connections(xps_loop_t *loop);
 
 #endif

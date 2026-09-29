@@ -10,6 +10,10 @@ struct xps_connection_s {
     xps_listener_t *listener;
     char *remote_ip;
     xps_buffer_list_t *write_buff_list;
+    bool read_ready;
+    bool write_ready;
+    xps_handler_t send_handler;
+    xps_handler_t recv_handler;
 };
 
 // xps_connection_t *xps_connection_create(int epoll_fd, int sock_fd);
